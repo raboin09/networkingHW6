@@ -16,23 +16,33 @@ public class BigramCountMapper extends Mapper<LongWritable, Text, BigramWritable
     @Override
     public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
         String line = value.toString();
-        String prev = null;
         StringTokenizer itr = new StringTokenizer(line);
-        String[] arr = new String[itr.countTokens()];
-        for(int i=0; i<itr.countTokens(); i++){
-            arr[i] = itr.nextToken().toString();
+        String[] arr;
+        int countOfTokens = 0;
+        while(itr.hasMoreTokens()){
+            countOfTokens++;
+            itr.nextToken();
         }
-        BIGRAM.set(new Text("arr[0]"), new Text(arr[0]));
+        
+        itr = new StringTokenizer(line);
+        BIGRAM.set(new Text("Count of Tokens is: "), new Text(String.valueOf(countOfTokens)));
         context.write(BIGRAM, ONE);
+        arr = new String[countOfTokens];
+        for(int i=0; i<countOfTokens; i++){
+            arr[i] = itr.nextToken();
+            BIGRAM.set(new Text(arr[0] + "'s arr[" + i + "] is"), new Text(arr[i]));
+            context.write(BIGRAM, ONE);
+        }
+        
         String currentPerson = arr[0];
         for (int i = 0; i < arr.length; i++) {
             String cur = arr[i];
             StringBuilder comFriends = new StringBuilder();
             comFriends.append("{");
-            if (prev != null && cur != null) {
+            if (cur != null && !cur.equals(currentPerson)) {
                 if (Integer.parseInt(currentPerson) < Integer.parseInt(cur)) {
-                    for(int j=0; j<arr.length; j++){
-                        if(j!= i && j != Integer.parseInt(currentPerson)){
+                    for(int j=1; j<arr.length; j++){
+                       if(j!= i && j != Integer.parseInt(currentPerson)){
                             comFriends.append(arr[j]); 
                         }
                     }
@@ -40,7 +50,7 @@ public class BigramCountMapper extends Mapper<LongWritable, Text, BigramWritable
                     String valueAdd = comFriends.toString();
                     BIGRAM.set(new Text("(" + currentPerson + "," + cur + ")"), new Text(valueAdd));
                 } else if (Integer.parseInt(currentPerson) > Integer.parseInt(cur)) {
-                    for(int j=0; j<arr.length; j++){
+                    for(int j=1; j<arr.length; j++){
                         if(j!= i && j != Integer.parseInt(currentPerson)){
                             comFriends.append(arr[j]); 
                         }
@@ -51,7 +61,6 @@ public class BigramCountMapper extends Mapper<LongWritable, Text, BigramWritable
                 }
                 context.write(BIGRAM, ONE);
             }
-            prev = cur;
         }
 
         /*while (itr.hasMoreTokens()) {
