@@ -96,9 +96,9 @@ public class BigramCount extends Configured implements Tool {
 
         //assign output key/value types
         job.setMapOutputKeyClass(BigramWritable.class);
-        job.setMapOutputValueClass(IntWritable.class);
-        job.setOutputKeyClass(Text.class);
-        job.setOutputValueClass(IntWritable.class);
+        job.setMapOutputValueClass(Text.class);
+        job.setOutputKeyClass(BigramWritable.class);
+        job.setOutputValueClass(Text.class);
         job.setOutputFormatClass(TextOutputFormat.class);
 
         //assign mapper and reducer classes
