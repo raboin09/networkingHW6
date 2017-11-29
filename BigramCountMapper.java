@@ -26,6 +26,7 @@ public class BigramCountMapper extends Mapper<LongWritable, Text, BigramWritable
 
         itr = new StringTokenizer(line);
         arr = new String[countOfTokens];
+        
         for (int i = 0; i < countOfTokens; i++) {
             arr[i] = itr.nextToken();
         }
@@ -35,39 +36,26 @@ public class BigramCountMapper extends Mapper<LongWritable, Text, BigramWritable
             String cur = arr[i];
             StringBuilder comFriends = new StringBuilder();
             if (Integer.parseInt(currentPerson) < Integer.parseInt(cur)) {
-                
                 BIGRAM.set(new Text(currentPerson), new Text(cur));
             } else if (Integer.parseInt(currentPerson) > Integer.parseInt(cur)) {
-//                for (int j = 1; j < arr.length; j++) {
-//                    if (j != i && j != Integer.parseInt(currentPerson)) {
-//                        comFriends.append(arr[j]);
-//                    }
-//                }
-//                comFriends.append("}");
-//                String valueAdd = comFriends.toString();
                 BIGRAM.set(new Text(cur), new Text(currentPerson));
             }
-            boolean first = true;
+            
             for (int j = 1; j < arr.length; j++) {
                 if (j != i ) {
-                    if(!first){
-                        comFriends.append(',');
-                        first = false;
-                    }
                     comFriends.append(arr[j]);
+                    if(j<arr.length-1){
+                        comFriends.append(",");
+                    }
                 }
             }
+            
+            if(comFriends.charAt(comFriends.length()-1)==','){
+                comFriends.deleteCharAt(comFriends.length()-1);
+            }
+            
             String valueAdd = comFriends.toString();
             context.write(BIGRAM, new Text(valueAdd));
         }
-
-        /*while (itr.hasMoreTokens()) {
-            String cur = itr.nextToken();
-            if (prev != null) {
-                BIGRAM.set(new Text(prev), new Text(cur));
-                context.write(BIGRAM, ONE);
-            }
-            prev = cur;
-        }*/
     }
 }
